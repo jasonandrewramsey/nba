@@ -20,7 +20,7 @@ date <- as.Date(now(), tz = 'EST')
 #Read in all key data elements
 data_bin <-
   list(
-    ref_mapping = list(team_key_mappings = readRDS(paste0(path, 'data/mapping/bovada_nba_key_relationships.rds'))),
+    ref_mapping = list(team_key_mappings = readRDS(paste0(path, 'data/mapping/bovada_nba_key_relationships.rds')) %>% mutate_all(., ~paste(.))),
     nba = 
       list(
         games = readRDS(paste0(path, 'data/nba/gameInfo.rds')),
@@ -55,6 +55,7 @@ competitors <-
     games %>% dplyr::select(gameId),
     by = 'gameId'
   ) %>%
+  mutate(teamId = paste(teamId)) %>%
   #add bovada key reference field
   left_join(
     data_bin$ref_mapping$team_key_mappings %>% dplyr::select(competitor_id = bovada_competitorId, teamId = nba_teamId),
@@ -74,6 +75,7 @@ rosters <-
       distinct(),
     by = 'teamId'
   ) %>%
+  mutate(teamId = paste(teamId)) %>%
   inner_join(
     data_bin$ref_mapping$team_key_mappings %>% dplyr::select(dk_teamId, teamId=nba_teamId),
     by = 'teamId'
@@ -195,12 +197,20 @@ games %>%
     data_bin$bovada$ref_events %>% dplyr::select(-timestamp),
     by = 'event_id'
   ) %>%
+  mutate(home_teamId = paste(home_teamId)) %>%
   left_join(
-    competitors %>% filter(home_away_flag == 'home') %>% setNames(paste0('home_', names(.))),
+    competitors %>% 
+      filter(home_away_flag == 'home') %>% 
+      setNames(paste0('home_', names(.))) %>%
+      mutate(home_teamId = paste(home_teamId)),
     by = 'home_teamId'
   ) %>%
+  mutate(away_teamId = paste(away_teamId)) %>%
   left_join(
-    competitors %>% filter(home_away_flag == 'away') %>% setNames(paste0('away_', names(.))),
+    competitors %>% 
+      filter(home_away_flag == 'away') %>% 
+      setNames(paste0('away_', names(.))) %>%
+      mutate(away_teamId = paste(away_teamId)),
     by = 'away_teamId'
   ) %>%
   left_join(
