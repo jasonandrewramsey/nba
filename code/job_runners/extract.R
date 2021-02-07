@@ -1,22 +1,25 @@
 # !diagnostics off
+
+# Packages & Dependencies -------------------------------------------------
+require(pacman)
+pacman::p_load(tidyverse, zoo, reshape2, lubridate, httr, jsonlite, rvest, excel.link)
+#On error try the below::
+#pacman::p_load(dplyr, rvest, purrr, stringr, zoo, reshape2, lubridate, httr, jsonlite, excel.link)
+
+# Parameter Declaration ---------------------------------------------------
 path <- './'
-
-# Load all functions for job runners ----------------------------------------------------------
-run_files <- c('packages', 'extract_transform_load_data_areas', 'generic')
-
-invisible(
-  run_files %>%
-  map(., ~source(paste0(path, 'code/job_runners/functions/', ., '.R')))
-)
-
-#Load data areas
-extract.transform.load.data.areas(path)
-
-# Key Parameter Declaration -----------------------------------------------
 date <- as.Date(now(), tz = 'EST')
 
-# Load key data -----------------------------------------------------------
+# Load all functions for job runners ----------------------------------------------------------
+invisible(
+  list.files(paste0(path, 'code/job_runners/functions/'), full.names = T) %>%
+  map(., ~source(.))
+)
 
+# Load Data Areas ---------------------------------------------------------
+extract.transform.load.data.areas(path)
+
+# Data Load ---------------------------------------------------------------
 #Read in all key data elements
 data_bin <-
   list(
@@ -82,13 +85,18 @@ rosters <-
   ) %>%
   nba.roster.to.dk(., draftkings_df = data_bin %>% .$draftkings) %>%
   left_join(
-    data_bin$espn %>% dplyr::select(pid, depth),
+    data_bin$espn %>%
+      ## this filter will ensure 1:1 but will leave out some individuals
+     # filter(as.numeric(paste(depth)) <= 3) %>%
+      group_by(pid) %>%
+      arrange(depth) %>%
+      summarise_all(first) %>%
+      as.data.frame %>%
+      dplyr::select(pid, depth),
     by = 'pid'
   )
 
-
 # Bovada data retrieval ---------------------------------------------------
-
 #Extract the events that occur for our in-scope competitors
 #Transform to wide to allow for self_gameId
 bovada_scoped_events <- 

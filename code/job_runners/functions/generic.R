@@ -12,7 +12,7 @@ draftkings.load.most.recent.extract <- function(path) {
   #Load
   return(
     readRDS(paste0(path, 'data/draftkings/', rec_file)) %>%
-      dplyr::select(firstName, lastName, displayName, shortName, playerId, position, teamId, status) %>%
+      dplyr::select(firstName, lastName, displayName, shortName, playerId, position, teamId, status, salary) %>%
       distinct()
   )
 }

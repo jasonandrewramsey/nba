@@ -70,7 +70,8 @@ get.dk.draft.group <- function() {
       setNames('gameCount')
   ) %>%
     invoke(cbind.data.frame, .) %>%
-    filter(sport == 'NBA') %>%
+    filter(sport == 'NBA',
+           contestTypeId == 70) %>%
     filter(gameCount == max(gameCount)) %>%
     .$draftGroupId %>%
     first()

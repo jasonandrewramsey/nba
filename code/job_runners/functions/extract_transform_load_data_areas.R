@@ -12,7 +12,7 @@ extract.transform.load.data.areas <- function(path, force_reload) {
   #espn depth
   source(paste0(path, 'code/espn/main/etl.R'))
   if(as.numeric(difftime(now(), file.info(paste0(path, 'data/espn/depthChart.rds'))$mtime, unit = 'days'))>1 | force_reload == T) {
-    extract.transform.load.espn(path)
+    #extract.transform.load.espn(path)
   }
   
   #bovada
@@ -22,4 +22,19 @@ extract.transform.load.data.areas <- function(path, force_reload) {
   #draft kings
   source(paste0(path, 'code/draftkings/main/etl.R'))
   extract.structure.store.draftkings(path)
+  
+  #Print progress report
+  print(paste0('nba schedule file updated at....', format(file.info(list.files(paste0(path, '/data/nba/'), full.names = T)) %>% arrange(desc(ctime)) %>% .$ctime %>% max(), '%I:%M', tz = 'EST')))
+  print(paste0('espn depth file updated at....', format(file.info(list.files(paste0(path, '/data/espn/'), full.names = T)) %>% arrange(desc(ctime)) %>% .$ctime %>% max(), '%I:%M', tz = 'EST')))
+  print(paste0('bovada line info file updated at....', format(file.info(list.files(paste0(path, '/data/bovada/'), full.names = T)) %>% arrange(desc(ctime)) %>% .$ctime %>% max(), '%I:%M', tz = 'EST')))
+  print(paste0('draftkings file updated at....', format(file.info(list.files(paste0(path, '/data/draftkings/'), full.names = T)) %>% arrange(desc(ctime)) %>% .$ctime %>% max(), '%I:%M', tz = 'EST')))
 }
+
+
+
+
+
+
+
+
+
